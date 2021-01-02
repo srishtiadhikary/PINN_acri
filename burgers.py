@@ -26,7 +26,7 @@ pinn.add(tensorflow.keras.layers.Dense(2,activation='tanh', kernel_initializer='
 
 # loss function
 def lossfn(nn,xx,tt):
-    def innloss(ucalc,upred):
+    def innloss(ucalc,utru):
         with tensorflow.GradientTape() as t1:
             inp=np.stack((xx,tt),axis=1)
             u=nn(inp)
@@ -35,8 +35,8 @@ def lossfn(nn,xx,tt):
             uxx=t1.gradient(ux,xx)
             f=ut+u*ux-(0.01/np.pi)*uxx
             ucalc = tensorflow.cast(ucalc, dtype='float64')
-            upred = tensorflow.cast(upred, dtype='float64')
-            loss1 = tensorflow.keras.losses.logcosh(upred,ucalc)
+            utru = tensorflow.cast(utru, dtype='float64')
+            loss1 = tensorflow.keras.losses.logcosh(utru,ucalc)
             loss2 = tensorflow.reduce_mean(tensorflow.square(f))
             return loss1 + loss2
     return innloss
