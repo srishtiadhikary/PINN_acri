@@ -11,22 +11,23 @@ td=[]
 for i in range(3000):
     frand = random.uniform(-1, 1)
     xd.append(frand)
-xdd=np.reshape(xd,(3000,1))
-xdd=tensorflow.cast(xdd,dtype='float32')
+#xdd=np.reshape(xd,(3000,1))
+xd=tensorflow.cast(xd,dtype='float32')
 for i in range(3000):
     frand = random.uniform(0, 1)
     td.append(frand)
-tdd=np.reshape(td,(3000,1))
-tdd=tensorflow.cast(tdd,dtype='float32')
+#tdd=np.reshape(td,(3000,1))
+td=tensorflow.cast(td,dtype='float32')
 xbc=random.choices([-1,1], k=3000)
-xbcc=np.reshape(xbc,(3000,1))
-xbcc=tensorflow.cast(xbcc,dtype='float32')
-inpd=tensorflow.stack([xdd,tdd],axis=1)
-inpbc=tensorflow.stack([xbcc,tdd],axis=1)
-inp=tensorflow.stack([inpd,inpbc],axis=0)
+#xbcc=np.reshape(xbc,(3000,1))
+xbc=tensorflow.cast(xbc,dtype='float32')
+inpd=tensorflow.stack([xd,td],axis=1)
+inpbc=tensorflow.stack([xbc,td],axis=1)
+inp=tensorflow.concat([inpd,inpbc],axis=0)
 x= inp[:,0:1]
 t= inp[:,1:2]
 out=np.zeros((3000,1),dtype='float32')
+#print(np.shape(t))
 # neural network structure
 x_in = tensorflow.keras.layers.Input(shape=(1), name="Position")
 t_in = tensorflow.keras.layers.Input(shape=(1), name="Time")
@@ -40,7 +41,7 @@ output=(tensorflow.keras.layers.Dense(1,activation='tanh'))(dense5)
 pinn = tensorflow.keras.Model(inputs=[x_in,t_in], outputs=output, name="pinn")
 
 
-#loss function
+ #loss function
 def lossfn(nn, x, t):
   def loss(uac, ucalc):
     with tensorflow.GradientTape(persistent=True) as t1:
@@ -65,4 +66,10 @@ def lossfn(nn, x, t):
 #integrating the loss function
 loss = lossfn(pinn, x, t)
 pinn.compile(optimizer='adam', loss=loss, metrics=['mse'])
-pinn.fit([inpbc[:,0:1], inpbc[:,1:2]], out, batch_size=30, epochs=30)
+pinn.fit([inpbc[:,0:1], inpbc[:,1:2]], out, batch_size=30, epochs=3)
+        
+
+x_test = x[random.randint(0,3000)]
+t_test = t[random.randint(0,3000)]
+u = pinn([x_test, t_test])
+tensorflow.print("", x_test, "", t_test, "" , u)
